@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Plot non-linear inequalities with matplotlib</title>
+<link rel="stylesheet" type="text/css" href="css/style.css"/>
+</head>
+<body>
+<div id="header-wrap">
+<div id="header" class="container_16">
+<h1>rioj7.github.io</h1>
+<div id="nav">
+<div><a href="/">Home</a></div>
+</div>
+</div>
+</div>
+<div id="content-outer">
+<div id="content-wrapper" class="container_16">
+<div id="main" class="grid_16">
+<h1>Plot non-linear inequalities with matplotlib</h1>
+<p class="post-info">Posted by rioj7 on <span class="date">2024-01-18</span></p>
+<p>On 2024-01-18 user <a href="https://stackoverflow.com/users/23021439/myssk">MysSk</a> (now deleted) posted the question <a href="https://stackoverflow.com/questions/77839016/plot-non-linear-inequalities-with-matplotlib">Plot non-linear inequalities with matplotlib</a> on StackOverflow. Shortly after I posted an answer the question was deleted.</p>
+<p>Here I show the question and solution so others might be able to find the page through a search engine.</p>
+<p>The final version of the surface:</p>
+<p><img src="images/2024-01-18-triangles.png" width="507" height="521"/></p>
+<h2>Question</h2>
+<hr/>
+<p>I would like to plot this non-linear inequality in matplotlib</p>
+<pre>[-2 &lt; x &lt; -(4/5)]
+[0 &lt; y &lt; (20 + 25x)/(-1 + 10x)]
+[-1 &lt; z &lt; (16 + 15x - 9y - 10x*y)/(4 + 10x + 10y)]</pre>
+<p>It can be achieved with a scatter plot as:</p>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+spread = <span class="num">50</span>
+
+x = np.linspace(<span class="num">-2</span>, <span class="num">-4</span>/<span class="num">5</span>, spread)
+y = np.linspace(<span class="num">0</span>, <span class="num">2</span>, spread)
+z = np.linspace(<span class="num">-1</span>, <span class="num">1</span>, spread)
+
+xx, yy, zz = np.meshgrid(x, y, z)
+
+mask1 = yy &lt; (<span class="num">20</span>+<span class="num">25</span>*xx)/(<span class="num">-1</span>+<span class="num">10</span>*xx)
+mask2 = zz &lt; (<span class="num">16</span>+<span class="num">15</span>*xx-<span class="num">9</span>*yy-<span class="num">10</span>*xx*yy)/(<span class="num">4</span>+<span class="num">10</span>*xx+<span class="num">10</span>*yy)
+
+mask = mask1 &amp; mask2
+
+fig = plt.figure()
+ax = fig.add_subplot(<span class="num">111</span>, projection=<span class="st">'3d'</span>)
+
+ax.scatter(xx[mask], yy[mask], zz[mask])
+plt.show()</pre>
+<p>But I would like to have it as a surface without the being based on the scatter plot, so that I can get the boundaries more accurately.</p>
+<p><small>Asked by <a href="https://stackoverflow.com/users/23021439/myssk">MysSk</a> - 2024-01-18</small></p>
+<hr/>
+<h2>Answer</h2>
+<p>Looking at the plot from the code in the question it draws a lot of unneeded points.</p>
+<p><img src="images/2024-01-18-question.png" width="420" height="368"/></p>
+<p>To see the outline points I modified the <code>mask</code> variable.</p>
+<pre><span class="kw">for</span> xl <span class="kw">in</span> <span class="nb">range</span>(spread):
+  <span class="kw">for</span> yl <span class="kw">in</span> <span class="nb">range</span>(spread):
+    <span class="kw">if</span> <span class="kw">not</span> mask[xl,yl,<span class="num">0</span>]: <span class="kw">continue</span>
+    <span class="kw">for</span> zl <span class="kw">in</span> <span class="nb">range</span>(<span class="num">1</span>, spread):
+      <span class="kw">if</span> mask[xl,yl,zl]:
+        mask[xl,yl,zl-<span class="num">1</span>] = <span class="nb">False</span></pre>
+<p><img src="images/2024-01-18-question-surface.png" width="409" height="368"/></p>
+<p>You can use these points to let matplotlib draw a surface:</p>
+<pre>x2d, y2d = np.meshgrid(x,y)
+z2d, _   = np.meshgrid(x,y)
+
+<span class="kw">for</span> xl <span class="kw">in</span> <span class="nb">range</span>(spread):
+  <span class="kw">for</span> yl <span class="kw">in</span> <span class="nb">range</span>(spread):
+    xp = x2d[xl,yl]
+    yp = y2d[xl,yl]
+    z2d[xl,yl] = <span class="num">-1</span>
+    <span class="kw">for</span> zl <span class="kw">in</span> <span class="nb">range</span>(<span class="num">1</span>, spread):
+      <span class="kw">if</span> mask[xl,yl,zl]:
+        z2d[xl,yl] = zz[xl,yl,zl]
+
+fig = plt.figure()
+ax = fig.add_subplot(<span class="num">111</span>, projection=<span class="st">'3d'</span>)
+ax.plot_surface(x2d, y2d, z2d)
+
+plt.show()</pre>
+<p><img src="images/2024-01-18-surface-discrete.png" width="411" height="369"/></p>
+<p>We can get rid of the discrete look of the surface by calculating the Z coordinate that is the limit for a particular XY coordinate:</p>
+<pre><span class="kw">for</span> xl <span class="kw">in</span> <span class="nb">range</span>(spread):
+  <span class="kw">for</span> yl <span class="kw">in</span> <span class="nb">range</span>(spread):
+    xp = x2d[xl,yl]
+    yp = y2d[xl,yl]
+    z2d[xl,yl] = <span class="num">-1</span>
+    <span class="kw">if</span> <span class="kw">not</span> mask[xl,yl,<span class="num">0</span>]: <span class="kw">continue</span>
+    z2d[xl,yl] = (<span class="num">16</span>+<span class="num">15</span>*xp-<span class="num">9</span>*yp-<span class="num">10</span>*xp*yp)/(<span class="num">4</span>+<span class="num">10</span>*xp+<span class="num">10</span>*yp)</pre>
+<p><img src="images/2024-01-18-surface-smooth.png" width="396" height="349"/></p>
+<p>Matplotlib draws the quads with 2 triangles but chooses the wrong variant. This gives a jagged edge at the Z=-1 plane.</p>
+<p>By calculating the spacing of the Y coordinates based on the X coordinates we get a more accurate boundary. We also draw this boundary at Z=-1:</p>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+
+spread = <span class="num">25</span>
+
+x = np.linspace(<span class="num">-2</span>, <span class="num">-4</span>/<span class="num">5</span>, spread)
+y = (<span class="num">20</span>+<span class="num">25</span>*x)/(<span class="num">-1</span>+<span class="num">10</span>*x)
+xx, yy = np.meshgrid(x,y)
+zz, _  = np.meshgrid(x,y)
+
+<span class="kw">for</span> xl <span class="kw">in</span> <span class="nb">range</span>(spread):
+  <span class="kw">for</span> yl <span class="kw">in</span> <span class="nb">range</span>(spread):
+    xp = xx[xl,yl]
+    yp = yy[xl,yl]
+    zz[xl,yl] = <span class="num">-1</span>
+    <span class="kw">if</span> yp &gt;= (<span class="num">20</span>+<span class="num">25</span>*xp)/(<span class="num">-1</span>+<span class="num">10</span>*xp): <span class="kw">continue</span>
+    zz[xl,yl] = <span class="nb">max</span>(<span class="num">-1</span>, (<span class="num">16</span>+<span class="num">15</span>*xp-<span class="num">9</span>*yp-<span class="num">10</span>*xp*yp)/(<span class="num">4</span>+<span class="num">10</span>*xp+<span class="num">10</span>*yp))
+
+fig = plt.figure()
+ax = fig.add_subplot(<span class="num">111</span>, projection=<span class="st">'3d'</span>)
+ax.plot_wireframe(xx, yy, zz)
+ax.plot(x, y, [<span class="num">-1</span>], linewidth=<span class="num">2.0</span>, c=<span class="st">'red'</span>)
+plt.show()</pre>
+<p><img src="images/2024-01-18-wire-frame.png" width="367" height="367"/></p>
+<p>After posting this modified answer the <a href="https://stackoverflow.com/questions/77839016/plot-non-linear-inequalities-with-matplotlib">question</a> got deleted.</p>
+<p>I was curious what other questions MysSk had posted:</p>
+<ul>
+<li>2024-01-16: <a href="https://stackoverflow.com/questions/77829297/plot-interdependent-data">Plot interdependent data</a>
+<p>The <a href="https://stackoverflow.com/a/77829668/9938317">answer by Georgi</a> I still have to find out how it works using <code>np.vectorize</code>.</p>
+</li>
+<li>2024-01-17: <a href="https://stackoverflow.com/questions/77835337/plot-inequality-in-matplotlib">Plot inequality in matplotlib</a>
+<p>The <a href="https://stackoverflow.com/a/77835459/9938317">answer by weshouman</a> probably was the inspiration to use the mask method of the question.</p>
+<p>The <a href="https://stackoverflow.com/a/77837252/9938317">answer by jared</a> inspired me to construct a triangle version of the surface with the correct split of the quad for this problem.</p>
+</li>
+</ul>
+<h3>Triangle version of the surface</h3>
+<p>Using the answer from jared as a starting point I constructed a version of the surface with triangles.</p>
+<pre><span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">from</span> matplotlib <span class="kw">import</span> tri
+
+<span class="cm"># https://stackoverflow.com/a/77837252/9938317</span>
+<span class="kw">def</span> create_triangle_indices_from_meshgrid(n, m, orientation=1):
+  <span class="sd">"""Returns the indices into the flattened meshgrid which will create
+  triangles for `matplotlib.tri.Triangulation`.
+  Provides 2 triangle orientations.
+  One may be better than the other depending on the specific case.
+
+  Orientation 1:            Orientation 2:
+  1 - 4                     1 - 4
+  | \ |                     | / |
+  2 - 3                     2 - 3
+  """</span>
+  indices = np.arange(n*m).reshape(n, m)
+  p1 = indices[<span class="num">1</span>:, :<span class="num">-1</span>].flatten()
+  p2 = indices[:<span class="num">-1</span>, :<span class="num">-1</span>].flatten()
+  p3 = indices[:<span class="num">-1</span>, <span class="num">1</span>:].flatten()
+  p4 = indices[<span class="num">1</span>:, <span class="num">1</span>:].flatten()
+
+  <span class="kw">if</span> orientation == <span class="num">1</span>:
+    triangles1 = np.stack((p1, p2, p3), axis=<span class="num">1</span>)
+    triangles2 = np.stack((p1, p3, p4), axis=<span class="num">1</span>)
+  <span class="kw">elif</span> orientation == <span class="num">2</span>:
+    triangles1 = np.stack((p2, p3, p4), axis=<span class="num">1</span>)
+    triangles2 = np.stack((p1, p2, p4), axis=<span class="num">1</span>)
+  <span class="kw">else</span>:
+    <span class="kw">raise</span> ValueError(<span class="st">f'Orientation number <span class="fld">{orientation}</span> does not exist.'</span>)
+
+  <span class="kw">return</span> np.vstack((triangles1, triangles2))
+
+<span class="kw">def</span> yEqu(x): <span class="kw">return</span> (<span class="num">20</span>+<span class="num">25</span>*x)/(<span class="num">-1</span>+<span class="num">10</span>*x)
+<span class="kw">def</span> zEqu(x, y): <span class="kw">return</span> (<span class="num">16</span>+<span class="num">15</span>*x-<span class="num">9</span>*y-<span class="num">10</span>*x*y)/(<span class="num">4</span>+<span class="num">10</span>*x+<span class="num">10</span>*y)
+
+spread = <span class="num">50</span>
+
+x = np.linspace(<span class="num">-2</span>, <span class="num">-4</span>/<span class="num">5</span>, spread)
+y = yEqu(x)
+y = y[::<span class="num">-1</span>]
+X, Y = np.meshgrid(x,y)
+Z = zEqu(X, Y)
+maskZ = np.ma.array(Z, mask = Y &gt; yEqu(X))
+Z = maskZ.filled(fill_value=<span class="num">-1</span>)
+triangle_indices = create_triangle_indices_from_meshgrid(x.size, y.size, <span class="num">1</span>)
+triangles = tri.Triangulation(X.flat, Y.flat, triangles=triangle_indices)
+X_triangles = X.flatten()[triangle_indices]
+Y_triangles = Y.flatten()[triangle_indices]
+triangles.mask = (Y_triangles &gt; yEqu(X_triangles)).any(<span class="num">1</span>)
+
+fig = plt.figure()
+ax = fig.add_subplot(<span class="num">111</span>, projection=<span class="st">'3d'</span>)
+ax.plot_trisurf(triangles, Z.flat)
+plt.show()</pre>
+<p><img src="images/2024-01-18-triangles.png" width="507" height="521"/></p>
+</div>
+</div>
+</div>
+<div id="footer-wrapper">
+<div id="footer-bottom" class="container_16">
+<p>&nbsp; &copy; rioj7 &nbsp; &nbsp;
+Adapted a design from : <a href="http://www.styleshout.com/">styleshout</a></p>
+</div>
+</div>
+</body>
+</html>

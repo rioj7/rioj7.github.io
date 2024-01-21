@@ -1,0 +1,103 @@
+body {
+font-family: Verdana, Helvetica, sans-serif;
+font-size: 1em;
+color: #000;
+margin: 0;
+padding: 0;
+background: #fff;
+}
+a:link, a:visited {text-decoration: none;color: #ae855c;}
+a:hover {border-bottom: 1px dotted #ae855c;}
+.container_16 {width:960px;}
+.grid_4 {width:220px;}
+.grid_12 {width:700px;}
+.grid_16 {width:940px;}
+.grid_4, .grid_12, .grid_16 {margin:0 10px;}
+#header-wrap {
+background: #fff url(../images/css/bg.png) repeat-x;
+}
+#header {
+position: relative;
+margin: 0 auto;
+background: url(../images/css/border.gif) repeat-x left bottom;
+padding:50px 0 10px 0;
+}
+#header h1 {margin: 10px 0 0;}
+h1,h2,h3 {
+font-style: normal;
+font-weight: normal;
+}
+#nav {
+display: flex;
+position: absolute;
+left: 0;
+top: 5px;
+margin: 0 auto;
+padding: 0;
+}
+#nav div {
+margin: 5px 0 0 0;
+height: 40px;
+padding: 0 0 0 10px;
+}
+#nav a {
+display: block;
+text-decoration: none;
+margin: 0;
+padding: 10px 15px 0 5px;
+color: #eee;
+height: 30px;
+}
+#nav a:hover, #nav a:active {
+border: none;
+color: #bbb;
+background: transparent;
+}
+#nav #current {
+background: transparent url(../images/css/left-tab.png) no-repeat;
+}
+#nav #current a {
+color: #444;
+background: transparent url(../images/css/right-tab.png) no-repeat right top;
+}
+#content-outer {
+padding: 5px 0;
+border-bottom: 1px solid #E8E8E8;
+}
+#content-wrapper {
+display: flex;
+margin: 0 auto;
+padding-bottom: 5px;
+padding-top: 5px;
+overflow: auto;
+}
+#main.grid_12 {border-right:1px solid #f0f0f0;padding-right:5px;}
+#main h1 {padding-bottom:3px;border-bottom:1px solid #ebebeb;margin-bottom:3px;}
+#main h1 a {color:inherit;text-decoration:none;}
+.post-info {font-size: .95em;color: #B0B0B0;margin-top:3px;}
+.postmeta {
+padding: 5px;
+margin: 20px 15px 15px 10px;
+border: 1px solid #EBEBEB;
+background: #f8f8f8;
+}
+#footer-wrapper {background-color:#f5f5f5;font-size:0.9em;}
+#footer-bottom {margin:0 auto;border-top:1px solid #dadada;padding-bottom:1px;}
+code, pre {
+font-family: 'Source Code Pro', 'Lucida Console', 'Courier New', monospace;
+background: #f8f8f8;
+}
+pre {
+margin: 3px 0;
+padding: 15px;
+white-space: pre-wrap;
+word-break: break-all;
+border: 1px solid #F0F0F0;
+}
+pre .kw {color: #0000ff;}
+pre .fld {color: #0000ff;}
+pre .cm {color: #008000;}
+pre .st {color: #a31515;}
+pre .sd { color: #ed9d13 }
+pre .num { color: #aa7212 }
+pre .nb {color: #1e7983}
